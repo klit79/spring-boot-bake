@@ -48,8 +48,8 @@ ENV GRADLE_BUILD_ARTIFACT=${GRADLE_BUILD_ARTIFACT}
 ARG SPRING_BOOT_BAKE_APPDIR
 ENV SPRING_BOOT_BAKE_APPDIR=${SPRING_BOOT_BAKE_APPDIR}
 WORKDIR ${SPRING_BOOT_BAKE_APPDIR}
-COPY --from=layered ${SPRING_BOOT_BAKE_APPDIR}/dependencies/ ${SPRING_BOOT_BAKE_APPDIR}
-COPY --from=layered ${SPRING_BOOT_BAKE_APPDIR}/spring-boot-loader/ ${SPRING_BOOT_BAKE_APPDIR}
-COPY --from=layered ${SPRING_BOOT_BAKE_APPDIR}/snapshot-dependencies/ ${SPRING_BOOT_BAKE_APPDIR}
-COPY --from=layered ${SPRING_BOOT_BAKE_APPDIR}/application/ ${SPRING_BOOT_BAKE_APPDIR}
+COPY --from=layered ${SPRING_BOOT_BAKE_APPDIR}/dependencies/ ${SPRING_BOOT_BAKE_APPDIR}/dependencies/
+COPY --from=layered ${SPRING_BOOT_BAKE_APPDIR}/spring-boot-loader/ ${SPRING_BOOT_BAKE_APPDIR}/spring-boot-loader/
+COPY --from=layered ${SPRING_BOOT_BAKE_APPDIR}/snapshot-dependencies/ ${SPRING_BOOT_BAKE_APPDIR}/snapshot-dependencies/
+COPY --from=layered ${SPRING_BOOT_BAKE_APPDIR}/application/ ${SPRING_BOOT_BAKE_APPDIR}/application/
 ADD --chmod=0755 https://raw.githubusercontent.com/spring-boot-actions/spring-boot-bake/v4/docker/java-entrypoint.sh /java-entrypoint.sh
