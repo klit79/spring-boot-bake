@@ -13,9 +13,10 @@ ARG DETERMINISTIC
 RUN --mount=type=bind,target=/src,rw \
     java -Djarmode=tools -jar /src/build/libs/${GRADLE_BUILD_ARTIFACT} extract --layers --launcher --destination ${SPRING_BOOT_BAKE_APPDIR}
 
-# Normalize timestamps and permissions for deterministic builds
+# Normalize timestamps, ownership, and permissions for deterministic builds
 RUN if [ "$DETERMINISTIC" = "true" ]; then \
         find ${SPRING_BOOT_BAKE_APPDIR} -exec touch -t 202301010000.00 {} + && \
+        find ${SPRING_BOOT_BAKE_APPDIR} -exec chown 0:0 {} + && \
         find ${SPRING_BOOT_BAKE_APPDIR} -type f -exec chmod 644 {} + && \
         find ${SPRING_BOOT_BAKE_APPDIR} -type d -exec chmod 755 {} +; \
     fi
@@ -29,9 +30,10 @@ ARG DETERMINISTIC
 RUN --mount=type=bind,target=/src,rw \
     java -Djarmode=layertools -jar /src/build/libs/${GRADLE_BUILD_ARTIFACT} extract --destination ${SPRING_BOOT_BAKE_APPDIR}
 
-# Normalize timestamps and permissions for deterministic builds
+# Normalize timestamps, ownership, and permissions for deterministic builds
 RUN if [ "$DETERMINISTIC" = "true" ]; then \
         find ${SPRING_BOOT_BAKE_APPDIR} -exec touch -t 202301010000.00 {} + && \
+        find ${SPRING_BOOT_BAKE_APPDIR} -exec chown 0:0 {} + && \
         find ${SPRING_BOOT_BAKE_APPDIR} -type f -exec chmod 644 {} + && \
         find ${SPRING_BOOT_BAKE_APPDIR} -type d -exec chmod 755 {} +; \
     fi
