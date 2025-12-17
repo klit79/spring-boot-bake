@@ -3,21 +3,40 @@ ARG GRADLE_BUILD_ARTIFACT
 ARG SPRING_BOOT_BAKE_PATH
 ARG SPRING_BOOT_BAKE_APPDIR="/app"
 ARG SPRING_BOOT_BAKE_BASE_IMAGE=eclipse-temurin:17-jre-jammy
+ARG DETERMINISTIC=false
 
 # Extract Spring Boot application layers using jarmode=tools
 FROM ${SPRING_BOOT_BAKE_BASE_IMAGE} AS layered-tools
 ARG SPRING_BOOT_BAKE_APPDIR
 ARG GRADLE_BUILD_ARTIFACT
+ARG DETERMINISTIC
 RUN --mount=type=bind,target=/src,rw \
     java -Djarmode=tools -jar /src/build/libs/${GRADLE_BUILD_ARTIFACT} extract --layers --launcher --destination ${SPRING_BOOT_BAKE_APPDIR}
+
+# Normalize timestamps, ownership, and permissions for deterministic builds
+RUN if [ "$DETERMINISTIC" = "true" ]; then \
+        find ${SPRING_BOOT_BAKE_APPDIR} -exec touch -t 202301010000.00 {} + && \
+        find ${SPRING_BOOT_BAKE_APPDIR} -exec chown 0:0 {} + && \
+        find ${SPRING_BOOT_BAKE_APPDIR} -type f -exec chmod 644 {} + && \
+        find ${SPRING_BOOT_BAKE_APPDIR} -type d -exec chmod 755 {} +; \
+    fi
 
 # Extract Spring Boot application layers using jarmode=layertools
 # Note: the jarmode=layertools is being deprecated in favor of jarmode=tools
 FROM ${SPRING_BOOT_BAKE_BASE_IMAGE} AS layered-layertools
 ARG SPRING_BOOT_BAKE_APPDIR
 ARG GRADLE_BUILD_ARTIFACT
+ARG DETERMINISTIC
 RUN --mount=type=bind,target=/src,rw \
     java -Djarmode=layertools -jar /src/build/libs/${GRADLE_BUILD_ARTIFACT} extract --destination ${SPRING_BOOT_BAKE_APPDIR}
+
+# Normalize timestamps, ownership, and permissions for deterministic builds
+RUN if [ "$DETERMINISTIC" = "true" ]; then \
+        find ${SPRING_BOOT_BAKE_APPDIR} -exec touch -t 202301010000.00 {} + && \
+        find ${SPRING_BOOT_BAKE_APPDIR} -exec chown 0:0 {} + && \
+        find ${SPRING_BOOT_BAKE_APPDIR} -type f -exec chmod 644 {} + && \
+        find ${SPRING_BOOT_BAKE_APPDIR} -type d -exec chmod 755 {} +; \
+    fi
 
 # Intermediate layer to extract the layers using the specified jarmode
 FROM layered-${JARMODE} AS layered
